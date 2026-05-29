@@ -1,4 +1,11 @@
-# bun-react-tailwind-shadcn-template
+# Devin Infrastructure Monitoring
+
+Lightweight Devin admin tooling built with Bun, React, Tailwind, shadcn, and the local
+`devin-platform-typescript` client.
+
+The first implemented page is an enterprise-wide audit logs viewer. The frontend calls the local Bun
+backend, which uses `DEVIN_PLATFORM_API_KEY` from `.env` and defaults to `https://api.devin.ai` before
+calling `client.enterprise.listAuditLogs()`.
 
 To install dependencies:
 
@@ -9,13 +16,17 @@ bun install
 To start a development server:
 
 ```bash
-bun dev
+bun run dev
 ```
 
 To run for production:
 
 ```bash
-bun start
+bun run start
 ```
 
-This project was created using `bun init` in bun v1.3.13. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+To build:
+
+```bash
+bun run build
+```
