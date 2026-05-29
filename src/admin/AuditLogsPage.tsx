@@ -102,12 +102,12 @@ export function AuditLogsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <>
       <header className="border-b bg-card">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-6 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-sm font-medium text-muted-foreground">Lightweight admin</p>
-            <h1 className="text-3xl font-semibold tracking-tight">Audit logs</h1>
+            <h2 className="text-3xl font-semibold tracking-tight">Audit logs</h2>
           </div>
           <p className="max-w-xl text-sm text-muted-foreground">
             Enterprise-wide activity from the Devin Platform API, rendered with shadcn components.
@@ -246,6 +246,6 @@ export function AuditLogsPage() {
           </CardContent>
         </Card>
       </main>
-    </div>
+    </>
   );
 }
