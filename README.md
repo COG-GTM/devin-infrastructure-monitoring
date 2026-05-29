@@ -3,10 +3,10 @@
 Lightweight Devin admin tooling built with Bun, React, Tailwind, shadcn, and the local
 `devin-platform-typescript` client.
 
-Implemented pages include enterprise hypervisors and audit logs. The frontend calls the local Bun
+Implemented pages include enterprise hypervisors, Git connections, and audit logs. The frontend calls the local Bun
 backend, which uses `DEVIN_PLATFORM_API_KEY` from `.env` and defaults to `https://api.devin.ai` before
 calling the public Platform API methods, including `client.enterprise.listHypervisors()` and
-`client.enterprise.listAuditLogs()`.
+`client.enterprise.gitProviders.listConnections()`, plus `client.enterprise.listAuditLogs()`.
 
 To install dependencies:
 

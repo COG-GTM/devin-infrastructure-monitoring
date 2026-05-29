@@ -1,7 +1,7 @@
-import { Activity, Server } from "lucide-react";
+import { Activity, GitBranch, Server } from "lucide-react";
 import type { ReactNode } from "react";
 
-export type AdminPage = "audit-logs" | "hypervisors";
+export type AdminPage = "audit-logs" | "git-connections" | "hypervisors";
 
 const navItems: Array<{ page: AdminPage; label: string; description: string; href: string; icon: typeof Activity }> = [
   {
@@ -17,6 +17,13 @@ const navItems: Array<{ page: AdminPage; label: string; description: string; hre
     description: "Enterprise activity stream",
     href: "/audit-logs",
     icon: Activity,
+  },
+  {
+    page: "git-connections",
+    label: "Git connections",
+    description: "PAT token warnings",
+    href: "/git-connections",
+    icon: GitBranch,
   },
 ];
 

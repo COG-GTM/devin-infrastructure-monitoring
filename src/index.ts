@@ -4,6 +4,7 @@ import type {
   EnterpriseListAuditLogsParams,
   EnterpriseListHypervisorsParams,
 } from "../devin-platform-typescript/src/resources/enterprise/enterprise";
+import type { GitProviderListConnectionsParams } from "../devin-platform-typescript/src/resources/enterprise/git-providers";
 import index from "./index.html";
 
 const DEFAULT_DEVIN_API_BASE_URL = "https://api.devin.ai";
@@ -64,6 +65,28 @@ async function listHypervisors(req: Request) {
   }
 }
 
+async function listGitConnections(req: Request) {
+  if (!process.env.DEVIN_PLATFORM_API_KEY) {
+    return Response.json({ error: "DEVIN_PLATFORM_API_KEY is not configured." }, { status: 500 });
+  }
+
+  const url = new URL(req.url);
+  const query: GitProviderListConnectionsParams = {
+    after: url.searchParams.get("after") || undefined,
+    first: getOptionalNumber(url.searchParams, "first"),
+  };
+
+  try {
+    const client = new DevinPlatform({
+      apiKey: process.env.DEVIN_PLATFORM_API_KEY,
+      baseURL: process.env.DEVIN_PLATFORM_BASE_URL || DEFAULT_DEVIN_API_BASE_URL,
+    });
+    return Response.json(await client.enterprise.gitProviders.listConnections(query));
+  } catch (err) {
+    return Response.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+  }
+}
+
 const server = serve({
   routes: {
     // Serve index.html for all unmatched routes.
@@ -97,6 +120,10 @@ const server = serve({
 
     "/api/admin/hypervisors": {
       GET: listHypervisors,
+    },
+
+    "/api/admin/git-connections": {
+      GET: listGitConnections,
     },
   },
 
