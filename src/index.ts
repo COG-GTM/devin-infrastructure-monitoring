@@ -65,6 +65,22 @@ async function listHypervisors(req: Request) {
   }
 }
 
+async function getQueueStatus() {
+  if (!process.env.DEVIN_PLATFORM_API_KEY) {
+    return Response.json({ error: "DEVIN_PLATFORM_API_KEY is not configured." }, { status: 500 });
+  }
+
+  try {
+    const client = new DevinPlatform({
+      apiKey: process.env.DEVIN_PLATFORM_API_KEY,
+      baseURL: process.env.DEVIN_PLATFORM_BASE_URL || DEFAULT_DEVIN_API_BASE_URL,
+    });
+    return Response.json(await client.enterprise.getQueueStatus());
+  } catch (err) {
+    return Response.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+  }
+}
+
 async function listGitConnections(req: Request) {
   if (!process.env.DEVIN_PLATFORM_API_KEY) {
     return Response.json({ error: "DEVIN_PLATFORM_API_KEY is not configured." }, { status: 500 });
@@ -120,6 +136,10 @@ const server = serve({
 
     "/api/admin/hypervisors": {
       GET: listHypervisors,
+    },
+
+    "/api/admin/queue": {
+      GET: getQueueStatus,
     },
 
     "/api/admin/git-connections": {

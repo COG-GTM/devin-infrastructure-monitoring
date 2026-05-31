@@ -1,33 +1,51 @@
 # Devin Infrastructure Monitoring
 
-Lightweight Devin admin tooling built with Bun, React, Tailwind, shadcn, and the local
-`devin-platform-typescript` client.
+## Set up from scratch
 
-Implemented pages include enterprise hypervisors, Git connections, and audit logs. The frontend calls the local Bun
-backend, which uses `DEVIN_PLATFORM_API_KEY` from `.env` and defaults to `https://api.devin.ai` before
-calling the public Platform API methods, including `client.enterprise.listHypervisors()` and
-`client.enterprise.gitProviders.listConnections()`, plus `client.enterprise.listAuditLogs()`.
+1. Install Bun if it is not already installed.
 
-To install dependencies:
+2. Install dependencies:
 
-```bash
-bun install
-```
+   ```bash
+   bun install
+   ```
 
-To start a development server:
+3. Create a `.env` file from `.env.example`:
 
-```bash
-bun run dev
-```
+   ```bash
+   cp .env.example .env
+   ```
 
-To run for production:
+4. In your Devin enterprise settings, create or request a Devin Platform API service user key with the role:
 
-```bash
-bun run start
-```
+   ```text
+   MB Service User - Observability
+   ```
 
-To build:
+5. Paste that key into `.env`:
+
+   ```bash
+   DEVIN_PLATFORM_API_KEY=your_service_user_key_here
+   ```
+
+6. Start the local app:
+
+   ```bash
+   bun run dev
+   ```
+
+7. Open the URL printed by Bun in your browser.
+
+## Other commands
+
+Build the app:
 
 ```bash
 bun run build
+```
+
+Run in production mode:
+
+```bash
+bun run start
 ```

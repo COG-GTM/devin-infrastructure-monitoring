@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, RefreshCcw } from "lucide-react";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import type {
   AuditLogAction,
   EnterpriseListAuditLogsParams,
@@ -78,6 +78,10 @@ export function AuditLogsPage() {
     }
   }
 
+  useEffect(() => {
+    void loadAuditLogs({ first: PAGE_SIZE, order: "desc" });
+  }, []);
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setCursorStack([]);
@@ -106,11 +110,11 @@ export function AuditLogsPage() {
       <header className="border-b bg-card">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Lightweight admin</p>
+            <p className="text-sm font-medium text-muted-foreground">Lightweight observability</p>
             <h2 className="text-3xl font-semibold tracking-tight">Audit logs</h2>
           </div>
           <p className="max-w-xl text-sm text-muted-foreground">
-            Enterprise-wide activity from the Devin Platform API, rendered with shadcn components.
+            Enterprise-wide activity from the Devin Platform API.
           </p>
         </div>
       </header>
@@ -119,9 +123,7 @@ export function AuditLogsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Connection and filters</CardTitle>
-            <CardDescription>
-              API requests are proxied through the Bun backend using DEVIN_PLATFORM_API_KEY from .env.
-            </CardDescription>
+            <CardDescription>Filter and browse audit log entries.</CardDescription>
           </CardHeader>
           <CardContent>
             <form className="grid gap-4 lg:grid-cols-12" onSubmit={handleSubmit}>

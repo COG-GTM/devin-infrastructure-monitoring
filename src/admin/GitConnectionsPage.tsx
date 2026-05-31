@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, Loader2, RefreshCcw } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { GitProviderListConnectionsResponse } from "../../devin-platform-typescript/src/resources/enterprise/git-providers";
 
 const PAGE_SIZE = 100;
@@ -21,27 +21,39 @@ function providerLabel(value: GitConnection["git_provider_type"]) {
 }
 
 export function GitConnectionsPage() {
-  const [cursorStack, setCursorStack] = useState<string[]>([]);
-  const [currentCursor, setCurrentCursor] = useState<string | undefined>();
-  const [connections, setConnections] = useState<GitProviderListConnectionsResponse | undefined>();
+  const [connections, setConnections] = useState<GitConnection[]>([]);
+  const [apiTotal, setApiTotal] = useState<number | null | undefined>();
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
 
-  const patConnections = useMemo(() => connections?.items.filter(isPatConnection) ?? [], [connections]);
+  const patConnections = useMemo(() => connections.filter(isPatConnection), [connections]);
 
-  async function loadConnections(after = currentCursor) {
+  async function loadConnections() {
     setIsLoading(true);
     setError(undefined);
 
     try {
-      const searchParams = new URLSearchParams({ first: String(PAGE_SIZE) });
-      if (after) searchParams.set("after", after);
-      const res = await fetch(`/api/admin/git-connections?${searchParams.toString()}`);
-      const response = await res.json();
-      if (!res.ok) {
-        throw new Error(response.error || "Failed to load Git connections.");
-      }
-      setConnections(response);
+      const items: GitConnection[] = [];
+      let total: number | null | undefined;
+      let after: string | undefined;
+      do {
+        const searchParams = new URLSearchParams({ first: String(PAGE_SIZE) });
+        if (after) searchParams.set("after", after);
+        const res = await fetch(`/api/admin/git-connections?${searchParams.toString()}`);
+        const response = await res.json();
+        if (!res.ok) {
+          throw new Error(response.error || "Failed to load Git connections.");
+        }
+        const page = response as GitProviderListConnectionsResponse;
+        items.push(...page.items);
+        total = page.total;
+        after = page.has_next_page && page.end_cursor ? page.end_cursor : undefined;
+      } while (after);
+
+      setConnections(items);
+      setApiTotal(total);
+      setHasLoaded(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -49,26 +61,12 @@ export function GitConnectionsPage() {
     }
   }
 
+  useEffect(() => {
+    void loadConnections();
+  }, []);
+
   function refresh() {
-    setCursorStack([]);
-    setCurrentCursor(undefined);
-    void loadConnections(undefined);
-  }
-
-  function goNext() {
-    if (!connections?.end_cursor) return;
-    const nextCursor = connections.end_cursor;
-    setCursorStack((cursors) => [...cursors, currentCursor ?? ""]);
-    setCurrentCursor(nextCursor);
-    void loadConnections(nextCursor);
-  }
-
-  function goPrevious() {
-    const previousCursor = cursorStack.at(-1);
-    setCursorStack((cursors) => cursors.slice(0, -1));
-    const normalizedCursor = previousCursor || undefined;
-    setCurrentCursor(normalizedCursor);
-    void loadConnections(normalizedCursor);
+    void loadConnections();
   }
 
   return (
@@ -90,7 +88,7 @@ export function GitConnectionsPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Loaded connections</CardDescription>
-              <CardTitle className="text-2xl">{connections ? connections.items.length : "-"}</CardTitle>
+              <CardTitle className="text-2xl">{hasLoaded ? connections.length : "-"}</CardTitle>
             </CardHeader>
           </Card>
           <Card className="border-yellow-300 bg-yellow-50">
@@ -98,14 +96,14 @@ export function GitConnectionsPage() {
               <CardDescription className="text-yellow-900">PAT warnings</CardDescription>
               <CardTitle className="flex items-center gap-2 text-2xl text-yellow-900">
                 <AlertTriangle className="size-5" />
-                {connections ? patConnections.length : "-"}
+                {hasLoaded ? patConnections.length : "-"}
               </CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total if available</CardDescription>
-              <CardTitle className="text-2xl">{connections?.total ?? "-"}</CardTitle>
+              <CardTitle className="text-2xl">{apiTotal ?? "-"}</CardTitle>
             </CardHeader>
           </Card>
         </div>
@@ -119,7 +117,7 @@ export function GitConnectionsPage() {
             <div className="flex gap-2">
               <Button type="button" onClick={refresh} disabled={isLoading}>
                 {isLoading ? <Loader2 className="animate-spin" /> : <RefreshCcw />}
-                Load connections
+                Refresh all
               </Button>
             </div>
           </CardHeader>
@@ -128,22 +126,14 @@ export function GitConnectionsPage() {
         {error && <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">{error}</div>}
 
         <Card className="overflow-hidden">
-          <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <CardHeader>
             <div>
               <CardTitle>Connections</CardTitle>
               <CardDescription>
-                {connections
-                  ? `${connections.items.length}${connections.total ? ` of ${connections.total}` : ""} connections loaded`
+                {hasLoaded
+                  ? `${connections.length}${apiTotal ? ` of ${apiTotal}` : ""} connections loaded from all pages`
                   : "No connections loaded yet"}
               </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={goPrevious} disabled={isLoading || cursorStack.length === 0}>
-                Previous
-              </Button>
-              <Button type="button" variant="outline" onClick={goNext} disabled={isLoading || !connections?.has_next_page}>
-                Next
-              </Button>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -163,11 +153,11 @@ export function GitConnectionsPage() {
                   {isLoading ? (
                     <tr>
                       <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
-                        Loading Git connections...
+                        Loading all Git connections...
                       </td>
                     </tr>
-                  ) : connections?.items.length ? (
-                    connections.items.map((connection) => <ConnectionRow key={connection.git_connection_id} connection={connection} />)
+                  ) : connections.length ? (
+                    connections.map((connection) => <ConnectionRow key={connection.git_connection_id} connection={connection} />)
                   ) : (
                     <tr>
                       <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">

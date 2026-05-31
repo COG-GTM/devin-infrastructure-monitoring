@@ -33,8 +33,8 @@ export function AdminLayout({ activePage, children }: { activePage: AdminPage; c
       <aside className="border-b bg-card lg:min-h-screen lg:border-b-0 lg:border-r">
         <div className="flex h-full flex-col gap-6 px-5 py-6">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Lightweight admin</p>
-            <h1 className="text-2xl font-semibold tracking-tight">Devin Admin</h1>
+            <p className="text-sm font-medium text-muted-foreground">Lightweight observability</p>
+            <h1 className="text-2xl font-semibold tracking-tight">Devin Observability</h1>
           </div>
           <nav className="grid gap-2">
             {navItems.map((item) => {
@@ -57,9 +57,6 @@ export function AdminLayout({ activePage, children }: { activePage: AdminPage; c
               );
             })}
           </nav>
-          <p className="mt-auto text-xs text-muted-foreground">
-            API requests are proxied through Bun using DEVIN_PLATFORM_API_KEY from .env.
-          </p>
         </div>
       </aside>
       <div className="min-w-0">{children}</div>
