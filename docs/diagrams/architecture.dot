@@ -1,0 +1,60 @@
+// Architecture of devin-infrastructure-monitoring.
+// Edit this file, then run ./render.sh to regenerate architecture.png and architecture.svg.
+digraph architecture {
+  graph [rankdir=TB, fontname="DejaVu Sans", fontsize=18, labelloc=t, nodesep=0.45, ranksep=0.6, pad=0.3,
+         label="devin-infrastructure-monitoring: Bun server, React admin pages, devin-platform-typescript SDK"];
+  node  [shape=box, style="rounded,filled", fillcolor=white, fontname="DejaVu Sans", fontsize=16, margin="0.18,0.10"];
+  edge  [fontname="DejaVu Sans", fontsize=13, color="#555555"];
+
+  operator [label="Operator's browser\nhttp://localhost:3000", shape=oval, fillcolor="#e8f0fe"];
+
+  subgraph cluster_ui {
+    label="React 19 SPA (src/index.html -> src/frontend.tsx -> src/App.tsx)";
+    style="rounded,filled"; fillcolor="#f4f8ff"; color="#7a9cc6"; fontsize=16;
+    layout   [label="AdminLayout\nsidebar nav; page chosen from\nwindow.location.pathname"];
+    hyp      [label="HypervisorsPage\n/ and /hypervisors\nloads every page, filters + sorts locally"];
+    audit    [label="AuditLogsPage\n/audit-logs\naction / order / time filters,\n50 per page, cursor paging"];
+    git      [label="GitConnectionsPage\n/git-connections\nflags *_token types as PAT warnings"];
+    {rank=same; hyp; audit; git;}
+    layout -> hyp; layout -> audit; layout -> git;
+  }
+
+  subgraph cluster_server {
+    label="Bun server: src/index.ts (Bun.serve, default port 3000)";
+    style="rounded,filled"; fillcolor="#f3fbf3"; color="#78a878"; fontsize=16;
+    spa      [label="\"/*\" -> index.html\nHTML import bundled by Bun\n(+ bun-plugin-tailwind, HMR in dev)"];
+    r_hyp    [label="GET /api/admin/hypervisors\nafter, first, status"];
+    r_queue  [label="GET /api/admin/queue"];
+    r_audit  [label="GET /api/admin/audit-logs\naction, after, first, order,\ntime_after, time_before"];
+    r_git    [label="GET /api/admin/git-connections\nafter, first"];
+    hello    [label="/api/hello, /api/hello/:name\n(Bun template demo routes,\nnot used by the UI)", fillcolor="#f2f2f2", fontcolor="#666666"];
+    env      [label=".env (auto-loaded by Bun)\nDEVIN_PLATFORM_API_KEY (required)\nDEVIN_PLATFORM_BASE_URL (optional,\ndefault https://api.devin.ai)", shape=note, fillcolor="#fff8e1"];
+    {rank=same; r_hyp; r_queue; r_audit; r_git;}
+    {rank=same; spa; hello; env;}
+  }
+
+  subgraph cluster_sdk {
+    label="devin-platform-typescript (git submodule, pinned commit; imported from source)";
+    style="rounded,filled"; fillcolor="#fbf5ff"; color="#a083c0"; fontsize=16;
+    client   [label="new DevinPlatform({ apiKey, baseURL })\nper request; Authorization: Bearer <key>"];
+    m_ent    [label="enterprise.listHypervisors()\nenterprise.getQueueStatus()\nenterprise.listAuditLogs()"];
+    m_git    [label="enterprise.gitProviders\n.listConnections()"];
+    types    [label="Request / response types\n(also imported by the React pages)", shape=note, fillcolor="#f7efff"];
+    client -> m_ent; client -> m_git;
+  }
+
+  api [label="Devin Platform API\n/v3/enterprise/hypervisors   /v3/enterprise/queue\n/v3/enterprise/audit-logs   /v3/enterprise/git-providers/connections", shape=cylinder, fillcolor="#fdecea"];
+
+  operator -> layout [style=invis];
+  operator -> spa   [label="page load", constraint=false];
+  layout -> spa     [label="serves bundle", dir=back];
+  hyp   -> r_hyp    [label="fetch (loops cursors)"];
+  hyp   -> r_queue  [label="fetch"];
+  audit -> r_audit  [label="fetch"];
+  git   -> r_git    [label="fetch (loops cursors)"];
+  env -> r_hyp      [style=dashed, arrowhead=none, color="#c9a227"];
+  r_hyp -> client; r_queue -> client; r_audit -> client; r_git -> client;
+  m_ent -> api      [label="HTTPS GET"];
+  m_git -> api      [label="HTTPS GET"];
+  types -> hyp      [style=dotted, color="#a083c0", label="import type", constraint=false];
+}
