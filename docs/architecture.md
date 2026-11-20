@@ -58,7 +58,7 @@ The app itself has no automated tests and no CI. Checks that do run:
 
 - Type check: `bunx tsc --noEmit -p .` passes for `src/`. Because `tsconfig.json` has no `include`, it also type-checks the submodule's Jest tests, scripts and configs and reports errors there (missing Jest types and dev dependencies).
 - Build: `bun run build`.
-- SDK unit tests (submodule, Jest): `cd devin-platform-typescript && npx pnpm@10.30.1 install --frozen-lockfile && ./node_modules/.bin/jest --testPathIgnorePatterns api-resources`. The `tests/api-resources` suites expect a Prism mock of the Platform OpenAPI spec on `localhost:4010`.
+- SDK unit tests (submodule, Jest): `cd devin-platform-typescript && npx pnpm@10.30.1 install --frozen-lockfile && ./node_modules/.bin/jest --testPathIgnorePatterns api-resources`. The submodule is a separate Stainless project with its own `pnpm-lock.yaml` and Jest config, so it uses pnpm and Jest, not the root app's Bun tooling. The `tests/api-resources` suites expect a Prism mock of the Platform OpenAPI spec on `localhost:4010`.
 - `bun test` at the repo root picks up the submodule's Jest tests and runs them under Bun's runner, where some of them fail; use Jest in the submodule instead.
 
 ## Not covered by the UI
