@@ -158,9 +158,9 @@
 <!-- git&#45;&gt;r_git -->
 <g id="edge12" class="edge">
 <title>git&#45;&gt;r_git</title>
-<path fill="none" stroke="#555555" d="M280.64,-514.47C302.77,-508.29 326.04,-502.28 348,-497.5 572.35,-448.69 838.4,-428.36 1000.9,-420.05"/>
-<polygon fill="#555555" stroke="#555555" points="1001.16,-423.54 1010.97,-419.54 1000.81,-416.55 1001.16,-423.54"/>
-<text text-anchor="middle" x="527" y="-473.1" font-family="DejaVu Sans" font-size="13.00">fetch first=100</text>
+<path fill="none" stroke="#555555" d="M283.11,-514.43C304.53,-508.42 326.89,-502.49 348,-497.5 571.6,-444.63 838.14,-425.44 1000.91,-418.47"/>
+<polygon fill="#555555" stroke="#555555" points="1001.15,-421.96 1011,-418.05 1000.86,-414.97 1001.15,-421.96"/>
+<text text-anchor="middle" x="545.5" y="-473.1" font-family="DejaVu Sans" font-size="13.00">fetch (loops cursors)</text>
 </g>
 <!-- client -->
 <g id="node13" class="node">

@@ -22,13 +22,15 @@ The diagram source is [`diagrams/architecture.dot`](diagrams/architecture.dot) (
 | --- | --- | --- |
 | Hypervisors (`/`, `/hypervisors`; also any other unmatched path) | `GET /api/admin/queue` once, and `GET /api/admin/hypervisors?first=100&status=all[&after=...]` in a loop until `has_next_page` is false | `enterprise.getQueueStatus()` -> `GET /v3/enterprise/queue`; `enterprise.listHypervisors()` -> `GET /v3/enterprise/hypervisors` |
 | Audit logs (`/audit-logs`) | `GET /api/admin/audit-logs?first=50&order=...&action=...&time_after=...&time_before=...&after=...` | `enterprise.listAuditLogs()` -> `GET /v3/enterprise/audit-logs` |
-| Git connections (`/git-connections`) | `GET /api/admin/git-connections?first=100` (first page only) | `enterprise.gitProviders.listConnections()` -> `GET /v3/enterprise/git-providers/connections` |
+| Git connections (`/git-connections`) | `GET /api/admin/git-connections?first=100[&after=...]` in a loop until `has_next_page` is false | `enterprise.gitProviders.listConnections()` -> `GET /v3/enterprise/git-providers/connections` |
 
 Page behavior:
 
 - **Hypervisors** loads the whole fleet when the page opens, then filters by status (`available`, `restarting`, `disconnected`, `terminated`, `draining`) and sorts by created time or last heartbeat in the browser. Stat cards show queue size and status (`normal`, `elevated`, `high`), total, available and disconnected counts, and average utilization of available and draining hypervisors.
 - **Audit logs** filters by action (list in `src/admin/auditLogActions.ts`), order and a time range (converted to Unix seconds), shows 50 entries per page, and pages with the API's `end_cursor`, keeping a stack of earlier cursors for "Previous".
-- **Git connections** lists connections and marks every connection whose `git_provider_type` ends in `_token` as a PAT warning. Token values are never shown.
+- **Git connections** loads every page of connections and and marks every connection whose `git_provider_type` ends in `_token` as a PAT warning. Token values are never shown.
+
+In `bun run dev`, `src/frontend.tsx` renders inside React `StrictMode`, so each page's load effect runs twice and every request above is sent twice per page load (for example, the queue twice and each hypervisor page twice). Production builds run the effect once.
 
 Errors: a route returns HTTP 500 with `{ "error": "..." }` when the API key is missing or the SDK call throws, and the page shows that message.
 

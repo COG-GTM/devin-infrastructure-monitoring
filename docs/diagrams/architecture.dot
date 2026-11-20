@@ -51,7 +51,7 @@ digraph architecture {
   hyp   -> r_hyp    [label="fetch (loops cursors)"];
   hyp   -> r_queue  [label="fetch"];
   audit -> r_audit  [label="fetch"];
-  git   -> r_git    [label="fetch first=100"];
+  git   -> r_git    [label="fetch (loops cursors)"];
   env -> r_hyp      [style=dashed, arrowhead=none, color="#c9a227"];
   r_hyp -> client; r_queue -> client; r_audit -> client; r_git -> client;
   m_ent -> api      [label="HTTPS GET"];
